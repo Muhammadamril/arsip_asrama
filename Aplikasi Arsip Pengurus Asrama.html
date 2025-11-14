@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aplikasi Arsip Pengurus Asrama</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        background-color: #f3f4f6;
+      }
+      .container {
+        max-width: 1100px;
+        margin: 20px auto;
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      nav a {
+        margin: 0 10px;
+        padding: 8px 14px;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+      nav a.active {
+        background: #2563eb;
+        color: white;
+      }
+      section {
+        display: none;
+      }
+      section.active {
+        display: block;
+      }
+      #printHeader {
+        display: none;
+      }
+
+      @media print {
+        body {
+          background: white;
+        }
+        nav,
+        form,
+        button,
+        .no-print,
+        input[type="text"],
+        input[type="search"] {
+          display: none !important;
+        }
+        #printHeader {
+          display: block !important;
+          text-align: center;
+          margin-bottom: 20px;
+        }
+        #printHeader img {
+          width: 60px;
+          height: 60px;
+          margin-bottom: 8px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container text-center no-print">
+      <img src="img/logoo.jpg" alt="Logo" class="mx-auto w-20 mb-3" />
+      <h1 class="text-2xl font-bold mb-2">Aplikasi Arsip Pengurus Asrama</h1>
+      <h2 class="text-lg text-gray-700 mb-6">
+        Yayasan Pondok Pesantren Al Kautsar NW
+      </h2>
+      <nav class="mb-4">
+        <a class="menu-link active" data-page="beranda">Beranda</a>
+        <a class="menu-link" data-page="arsip">Arsip Keperluan</a>
+        <a class="menu-link" data-page="santri">Data Santri</a>
+        <a class="menu-link" data-page="bayar">Bukti Pembayaran</a>
+      </nav>
+    </div>
+
+    <div id="printHeader">
+      <img src="img/logoo.jpg" alt="Logo" />
+      <h2>Yayasan Pondok Pesantren Al Kautsar NW</h2>
+      <h3 id="judulLaporan"></h3>
+      <p id="tanggalCetak"></p>
+    </div>
+
+    <!-- ===== BERANDA ===== -->
+    <section id="beranda" class="container active">
+      <div class="text-center">
+        <img
+          src="img/POTO HALAMAN.jpg"
+          class="mx-auto w-full max-h-64 object-cover rounded mb-6"
+        />
+        <h2 class="text-2xl font-semibold text-blue-700 mb-3">
+          Selamat Datang di Aplikasi Arsip Asrama
+        </h2>
+        <p class="text-gray-700 mb-4">
+          Kelola arsip keperluan, data santri, dan bukti pembayaran di asrama Al
+          Kautsar NW.
+        </p>
+      </div>
+    </section>
+
+    <!-- ===== ARSIP ===== -->
+    <section id="arsip" class="container">
+      <div class="flex justify-between items-center mb-3">
+        <h2 class="text-xl font-semibold">Arsip Keperluan Santri</h2>
+        <button
+          onclick="cetakLaporan('arsip','Laporan Arsip Keperluan Santri')"
+          class="no-print bg-gray-700 text-white px-3 py-1 rounded"
+        >
+          🖨️ Cetak
+        </button>
+      </div>
+
+      <input
+        id="searchArsip"
+        type="search"
+        placeholder="Cari nama, keperluan, atau alamat..."
+        class="border p-2 w-full rounded mb-3 no-print"
+      />
+
+      <form
+        id="arsipForm"
+        class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 no-print"
+      >
+        <input
+          name="nama"
+          placeholder="Nama Santri"
+          class="border p-2 rounded"
+          required
+        />
+        <input type="date" name="tanggal" class="border p-2 rounded" required />
+        <input
+          name="alamat"
+          placeholder="Alamat"
+          class="border p-2 rounded"
+          required
+        />
+        <input
+          name="keperluan"
+          placeholder="Keperluan"
+          class="border p-2 rounded"
+          required
+        />
+        <input
+          type="time"
+          name="waktuPulang"
+          class="border p-2 rounded"
+          required
+        />
+        <input
+          type="time"
+          name="batasKembali"
+          class="border p-2 rounded"
+          required
+        />
+        <button
+          type="submit"
+          class="bg-green-500 text-white py-2 px-4 rounded col-span-full"
+        >
+          Simpan Arsip
+        </button>
+      </form>
+
+      <table class="w-full border border-gray-300">
+        <thead class="bg-gray-200">
+          <tr>
+            <th class="border p-2">No</th>
+            <th class="border p-2">Nama</th>
+            <th class="border p-2">Tanggal</th>
+            <th class="border p-2">Alamat</th>
+            <th class="border p-2">Keperluan</th>
+            <th class="border p-2">Pulang</th>
+            <th class="border p-2">Kembali</th>
+            <th class="border p-2">Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="arsipTable"></tbody>
+      </table>
+    </section>
+
+    <!-- ===== SANTRI ===== -->
+    <section id="santri" class="container">
+      <div class="flex justify-between items-center mb-3">
+        <h2 class="text-xl font-semibold">Data Santri</h2>
+        <button
+          onclick="cetakLaporan('santri','Laporan Data Santri')"
+          class="no-print bg-gray-700 text-white px-3 py-1 rounded"
+        >
+          🖨️ Cetak
+        </button>
+      </div>
+
+      <input
+        id="searchSantri"
+        type="search"
+        placeholder="Cari nama, kelas, atau alamat..."
+        class="border p-2 w-full rounded mb-3 no-print"
+      />
+
+      <form
+        id="santriForm"
+        class="grid grid-cols-1 md:grid-cols-6 gap-4 mb-4 no-print"
+      >
+        <input
+          name="nama"
+          placeholder="Nama"
+          class="border p-2 rounded"
+          required
+        />
+        <input
+          name="alamat"
+          placeholder="Alamat"
+          class="border p-2 rounded"
+          required
+        />
+        <input
+          name="hp"
+          placeholder="No HP"
+          class="border p-2 rounded"
+          required
+        />
+        <input
+          name="kelas"
+          placeholder="Kelas"
+          class="border p-2 rounded"
+          required
+        />
+        <input
+          name="ayah"
+          placeholder="Nama Ayah"
+          class="border p-2 rounded"
+          required
+        />
+        <input
+          name="ibu"
+          placeholder="Nama Ibu"
+          class="border p-2 rounded"
+          required
+        />
+        <button
+          type="submit"
+          class="bg-blue-500 text-white py-2 px-4 rounded col-span-full"
+        >
+          Simpan Data
+        </button>
+      </form>
+
+      <table class="w-full border border-gray-300">
+        <thead class="bg-gray-200">
+          <tr>
+            <th class="border p-2">No</th>
+            <th class="border p-2">Nama</th>
+            <th class="border p-2">Alamat</th>
+            <th class="border p-2">HP</th>
+            <th class="border p-2">Kelas</th>
+            <th class="border p-2">Ayah</th>
+            <th class="border p-2">Ibu</th>
+            <th class="border p-2">Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="santriTable"></tbody>
+      </table>
+
+      <p class="mt-3 text-right text-sm text-gray-600">
+        Total Santri: <span id="totalSantri">0</span>
+      </p>
+    </section>
+
+    <!-- ===== PEMBAYARAN ===== -->
+    <section id="bayar" class="container">
+      <div class="flex justify-between items-center mb-3">
+        <h2 class="text-xl font-semibold">Bukti Pembayaran Santri</h2>
+        <button
+          onclick="cetakLaporan('bayar','Laporan Bukti Pembayaran')"
+          class="no-print bg-gray-700 text-white px-3 py-1 rounded"
+        >
+          🖨️ Cetak
+        </button>
+      </div>
+
+      <!-- DASHBOARD REKAP -->
+      <div
+        class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4 text-white font-semibold text-center"
+      >
+        <div class="bg-green-500 p-4 rounded shadow">
+          <h3 class="text-lg">💰 Uang Masuk Bulan Ini</h3>
+          <p id="totalUangMasuk" class="text-2xl mt-1">Rp 0</p>
+        </div>
+        <div class="bg-blue-500 p-4 rounded shadow">
+          <h3 class="text-lg">🌾 Beras Masuk Bulan Ini</h3>
+          <p id="totalBerasMasuk" class="text-2xl mt-1">0 Kg</p>
+        </div>
+        <div class="bg-red-500 p-4 rounded shadow">
+          <h3 class="text-lg">💸 Uang Keluar Bulan Ini</h3>
+          <p id="totalUangKeluar" class="text-2xl mt-1">Rp 0</p>
+        </div>
+        <div class="bg-purple-600 p-4 rounded shadow">
+          <h3 class="text-lg">📊 Saldo Akhir Bulan Ini</h3>
+          <p id="saldoAkhir" class="text-2xl mt-1">Rp 0</p>
+        </div>
+      </div>
+
+      <input
+        id="searchBayar"
+        type="search"
+        placeholder="Cari nama, tanggal, atau alamat..."
+        class="border p-2 w-full rounded mb-3 no-print"
+      />
+
+      <form
+        id="bayarForm"
+        class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 no-print"
+      >
+        <input
+          name="nama"
+          placeholder="Nama Santri"
+          class="border p-2 rounded"
+          required
+        />
+        <input
+          name="alamat"
+          placeholder="Alamat"
+          class="border p-2 rounded"
+          required
+        />
+        <input type="date" name="tanggal" class="border p-2 rounded" required />
+        <input
+          name="uangMasuk"
+          type="number"
+          placeholder="Uang Masuk (Rp)"
+          class="border p-2 rounded"
+        />
+        <input
+          name="berasMasuk"
+          type="number"
+          placeholder="Beras Masuk (Kg)"
+          class="border p-2 rounded"
+        />
+        <input
+          name="uangKeluar"
+          type="number"
+          placeholder="Uang Keluar (Rp)"
+          class="border p-2 rounded"
+        />
+        <input
+          name="ket1"
+          placeholder="Keterangan 1"
+          class="border p-2 rounded"
+        />
+        <input
+          name="ket2"
+          placeholder="Keterangan 2"
+          class="border p-2 rounded"
+        />
+        <input
+          name="ket3"
+          placeholder="Keterangan 3"
+          class="border p-2 rounded"
+        />
+        <button
+          type="submit"
+          class="bg-purple-500 text-white py-2 px-4 rounded col-span-full"
+        >
+          Simpan Pembayaran
+        </button>
+      </form>
+
+      <table class="w-full border border-gray-300">
+        <thead class="bg-gray-200">
+          <tr>
+            <th class="border p-2">No</th>
+            <th class="border p-2">Nama</th>
+            <th class="border p-2">Alamat</th>
+            <th class="border p-2">Tanggal</th>
+            <th class="border p-2">Uang Masuk (Rp)</th>
+            <th class="border p-2">Beras Masuk (Kg)</th>
+            <th class="border p-2">Uang Keluar (Rp)</th>
+            <th class="border p-2">Ket 1</th>
+            <th class="border p-2">Ket 2</th>
+            <th class="border p-2">Ket 3</th>
+            <th class="border p-2">Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="bayarTable"></tbody>
+      </table>
+    </section>
+
+    <script>
+      // Navigasi
+      const links = document.querySelectorAll(".menu-link");
+      const pages = document.querySelectorAll("section");
+      links.forEach((l) =>
+        l.addEventListener("click", () => {
+          links.forEach((x) => x.classList.remove("active"));
+          l.classList.add("active");
+          pages.forEach((p) => p.classList.remove("active"));
+          document.getElementById(l.dataset.page).classList.add("active");
+        })
+      );
+
+      // Fungsi cetak laporan
+      function cetakLaporan(id, judul) {
+        document.getElementById("judulLaporan").innerText = judul;
+        document.getElementById("tanggalCetak").innerText =
+          "Tanggal Cetak: " + new Date().toLocaleDateString("id-ID");
+        pages.forEach((p) => p.classList.remove("active"));
+        document.getElementById(id).classList.add("active");
+        window.print();
+      }
+
+      // Utilitas data
+      const loadData = (key) => JSON.parse(localStorage.getItem(key)) || [];
+      const saveData = (key, data) =>
+        localStorage.setItem(key, JSON.stringify(data));
+      const formatRupiah = (n) =>
+        "Rp " + Number(n || 0).toLocaleString("id-ID");
+
+      /* ========== ARSIP ========== */
+      let dataArsip = loadData("arsipAsrama");
+      const arsipForm = document.getElementById("arsipForm");
+      const arsipTable = document.getElementById("arsipTable");
+      const searchArsip = document.getElementById("searchArsip");
+
+      function renderArsip(filter = "") {
+        arsipTable.innerHTML = dataArsip
+          .filter((a) =>
+            Object.values(a).some((v) =>
+              v.toLowerCase().includes(filter.toLowerCase())
+            )
+          )
+          .map(
+            (a, i) => `
+            <tr>
+              <td class="border p-2 text-center">${i + 1}</td>
+              <td class="border p-2">${a.nama}</td>
+              <td class="border p-2">${a.tanggal}</td>
+              <td class="border p-2">${a.alamat}</td>
+              <td class="border p-2">${a.keperluan}</td>
+              <td class="border p-2">${a.waktuPulang}</td>
+              <td class="border p-2">${a.batasKembali}</td>
+              <td class="border p-2 text-center no-print">
+                <button onclick="editArsip(${i})" class="bg-yellow-400 text-white px-2 py-1 rounded">Edit</button>
+                <button onclick="hapusArsip(${i})" class="bg-red-500 text-white px-2 py-1 rounded">Hapus</button>
+              </td>
+            </tr>`
+          )
+          .join("");
+      }
+
+      arsipForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        dataArsip.push(Object.fromEntries(new FormData(arsipForm).entries()));
+        saveData("arsipAsrama", dataArsip);
+        arsipForm.reset();
+        renderArsip(searchArsip.value);
+      });
+
+      function hapusArsip(i) {
+        dataArsip.splice(i, 1);
+        saveData("arsipAsrama", dataArsip);
+        renderArsip(searchArsip.value);
+      }
+
+      function editArsip(i) {
+        const a = dataArsip[i];
+        for (const k in a) if (arsipForm[k]) arsipForm[k].value = a[k];
+        hapusArsip(i);
+      }
+
+      searchArsip.addEventListener("input", () =>
+        renderArsip(searchArsip.value)
+      );
+      renderArsip();
+
+      /* ========== SANTRI ========== */
+      let dataSantri = loadData("daftarSantri");
+      const santriForm = document.getElementById("santriForm");
+      const santriTable = document.getElementById("santriTable");
+      const searchSantri = document.getElementById("searchSantri");
+
+      function renderSantri(filter = "") {
+        santriTable.innerHTML = dataSantri
+          .filter((s) =>
+            Object.values(s).some((v) =>
+              v.toLowerCase().includes(filter.toLowerCase())
+            )
+          )
+          .map(
+            (s, i) => `
+            <tr>
+              <td class="border p-2 text-center">${i + 1}</td>
+              <td class="border p-2">${s.nama}</td>
+              <td class="border p-2">${s.alamat}</td>
+              <td class="border p-2">${s.hp}</td>
+              <td class="border p-2">${s.kelas}</td>
+              <td class="border p-2">${s.ayah}</td>
+              <td class="border p-2">${s.ibu}</td>
+              <td class="border p-2 text-center no-print">
+                <button onclick="editSantri(${i})" class="bg-yellow-400 text-white px-2 py-1 rounded">Edit</button>
+                <button onclick="hapusSantri(${i})" class="bg-red-500 text-white px-2 py-1 rounded">Hapus</button>
+              </td>
+            </tr>`
+          )
+          .join("");
+        document.getElementById("totalSantri").innerText = dataSantri.length;
+      }
+
+      santriForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        dataSantri.push(Object.fromEntries(new FormData(santriForm).entries()));
+        saveData("daftarSantri", dataSantri);
+        santriForm.reset();
+        renderSantri(searchSantri.value);
+      });
+
+      function hapusSantri(i) {
+        dataSantri.splice(i, 1);
+        saveData("daftarSantri", dataSantri);
+        renderSantri(searchSantri.value);
+      }
+
+      function editSantri(i) {
+        const s = dataSantri[i];
+        for (const k in s) if (santriForm[k]) santriForm[k].value = s[k];
+        hapusSantri(i);
+      }
+
+      searchSantri.addEventListener("input", () =>
+        renderSantri(searchSantri.value)
+      );
+      renderSantri();
+
+      /* ========== PEMBAYARAN ========== */
+      let dataBayar = loadData("buktiPembayaran");
+      const bayarForm = document.getElementById("bayarForm");
+      const bayarTable = document.getElementById("bayarTable");
+      const searchBayar = document.getElementById("searchBayar");
+
+      function renderBayar(filter = "") {
+        bayarTable.innerHTML = dataBayar
+          .filter((b) =>
+            Object.values(b).some((v) =>
+              v.toLowerCase().includes(filter.toLowerCase())
+            )
+          )
+          .map(
+            (b, i) => `
+            <tr>
+              <td class="border p-2 text-center">${i + 1}</td>
+              <td class="border p-2">${b.nama}</td>
+              <td class="border p-2">${b.alamat}</td>
+              <td class="border p-2">${b.tanggal}</td>
+              <td class="border p-2 text-right">${formatRupiah(
+                b.uangMasuk
+              )}</td>
+              <td class="border p-2 text-center">${b.berasMasuk || 0}</td>
+              <td class="border p-2 text-right">${formatRupiah(
+                b.uangKeluar
+              )}</td>
+              <td class="border p-2">${b.ket1 || ""}</td>
+              <td class="border p-2">${b.ket2 || ""}</td>
+              <td class="border p-2">${b.ket3 || ""}</td>
+              <td class="border p-2 text-center no-print">
+                <button onclick="editBayar(${i})" class="bg-yellow-400 text-white px-2 py-1 rounded">Edit</button>
+                <button onclick="hapusBayar(${i})" class="bg-red-500 text-white px-2 py-1 rounded">Hapus</button>
+              </td>
+            </tr>`
+          )
+          .join("");
+        hitungTotalBulanan();
+      }
+
+      bayarForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        dataBayar.push(Object.fromEntries(new FormData(bayarForm).entries()));
+        saveData("buktiPembayaran", dataBayar);
+        bayarForm.reset();
+        renderBayar(searchBayar.value);
+      });
+
+      function hapusBayar(i) {
+        dataBayar.splice(i, 1);
+        saveData("buktiPembayaran", dataBayar);
+        renderBayar(searchBayar.value);
+      }
+
+      function editBayar(i) {
+        const b = dataBayar[i];
+        for (const k in b) if (bayarForm[k]) bayarForm[k].value = b[k];
+        hapusBayar(i);
+      }
+
+      searchBayar.addEventListener("input", () =>
+        renderBayar(searchBayar.value)
+      );
+
+      function hitungTotalBulanan() {
+        const bulanIni = new Date().getMonth() + 1;
+        const tahunIni = new Date().getFullYear();
+        const dataBulanIni = dataBayar.filter((b) => {
+          const t = new Date(b.tanggal);
+          return t.getMonth() + 1 === bulanIni && t.getFullYear() === tahunIni;
+        });
+
+        const totalMasuk = dataBulanIni.reduce(
+          (sum, b) => sum + (parseFloat(b.uangMasuk) || 0),
+          0
+        );
+        const totalBeras = dataBulanIni.reduce(
+          (sum, b) => sum + (parseFloat(b.berasMasuk) || 0),
+          0
+        );
+        const totalKeluar = dataBulanIni.reduce(
+          (sum, b) => sum + (parseFloat(b.uangKeluar) || 0),
+          0
+        );
+        const saldo = totalMasuk - totalKeluar;
+
+        document.getElementById("totalUangMasuk").textContent =
+          formatRupiah(totalMasuk);
+        document.getElementById(
+          "totalBerasMasuk"
+        ).textContent = `${totalBeras} Kg`;
+        document.getElementById("totalUangKeluar").textContent =
+          formatRupiah(totalKeluar);
+        document.getElementById("saldoAkhir").textContent = formatRupiah(saldo);
+      }
+
+      renderBayar();
+    </script>
+  </body>
+</html>
